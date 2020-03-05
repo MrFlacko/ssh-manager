@@ -25,6 +25,9 @@ SSH_DEFAULT_PORT=22
 
 #================== Functions ================================================
 
+#Just for testing
+clear
+
 function exec_ping() {
 	case $(uname) in 
 		MINGW*)
@@ -54,13 +57,13 @@ function separator() {
 }
 
 function list_commands() {
-	separator
-	echo -e "Availables commands"
-	separator
-	echo -e "$0 cc\t<alias> [username]\t\tconnect to server"
-	echo -e "$0 add\t<alias>:<user>:<host>:[port]\tadd new server"
-	echo -e "$0 del\t<alias>\t\t\t\tdelete server"
-	echo -e "$0 export\t\t\t\t\texport config"
+	echo -e "\nUsage\n"
+	echo -e " * SSH cc\t<alias> [username]\t\tConnect to Server"
+	echo -e " * SSH ii\t<alias>:<user>:<host>:[port]\tImport SSH ID"
+	echo -e " * SSH add\t<alias>:<user>:<host>:[port]\tAdd New Server"
+	echo -e " * SSH del\t<alias>\t\t\t\tDelete Server"
+	echo -e " * SSH export\t\t\t\t\tExport Config"
+	echo -e " * SSH n\t<commands>\t\t\tNormal SSH Commands\n"
 }
 
 function probe ()
@@ -100,6 +103,7 @@ function server_add() {
 	else
 		echo "$alias$DATA_DELIM$user" >> $HOST_FILE
 		echo "new alias '$alias' added"
+		list_commands
 	fi
 }
 
@@ -140,25 +144,23 @@ if [ ! -f $HOST_FILE ]; then touch "$HOST_FILE"; fi
 
 # without args
 if [ $# -eq 0 ]; then
-	separator 
-	echo "List of availables servers for user $(whoami) "
-	separator
-	while IFS=: read label user ip port         
-	do    
-	test_host $ip
-	echo -ne "\t"
-	cecho -n -blue $label
-	echo -ne ' ==> '
-	cecho -n -red $user 
-	cecho -n -yellow "@"
-	cecho -n -white $ip
-	echo -ne ' -> '
-	if [ "$port" == "" ]; then
-		port=$SSH_DEFAULT_PORT
-	fi
-	cecho -yellow $port
 	echo
-done < $HOST_FILE
+	while IFS=: read label user ip port         
+		do    
+			test_host $ip
+			echo -ne "\t"
+			cecho -n -blue $label
+			echo -ne ' ==> '
+			cecho -n -red $user 
+			cecho -n -yellow "@"
+			cecho -n -white $ip
+			echo -ne ' -> '
+			if [ "$port" == "" ]; then
+				port=$SSH_DEFAULT_PORT
+			fi
+			cecho -yellow $port
+			echo
+		done < $HOST_FILE
 
 list_commands
 
@@ -186,7 +188,25 @@ case "$cmd" in
 			exit 1
 		fi
 		;;
-
+	ii )
+		probe "$alias"
+		if [ $? -eq 0 ]; then
+			if [ "$user" == ""  ]; then
+				user=$(get_user "$alias")
+			fi
+			addr=$(get_addr "$alias")
+			port=$(get_port "$alias")
+			# Use default port when parameter is missing
+			if [ "$port" == "" ]; then
+				port=$SSH_DEFAULT_PORT
+			fi
+			echo "Importing ID to '$alias' ($addr:$port)"
+			ssh-copy-id $user@$addr -p $port
+		else
+			echo "$0: unknown alias '$alias'"
+			exit 1
+		fi
+		;;
 	# Add new alias
 	add )
 		server_add
@@ -203,6 +223,7 @@ case "$cmd" in
 			cat $HOST_FILE | sed '/^'$alias$DATA_DELIM'/d' > /tmp/.tmp.$$
 			mv /tmp/.tmp.$$ $HOST_FILE
 			echo "alias '$alias' removed"
+			list_commands
 		else
 			echo "$0: unknown alias '$alias'"
 		fi
