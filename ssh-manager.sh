@@ -58,12 +58,12 @@ function separator() {
 
 function list_commands() {
 	echo -e "\nUsage\n"
-	echo -e " * SSH cc\t<alias> [username]\t\tConnect to Server"
-	echo -e " * SSH ii\t<alias>:<user>:<host>:[port]\tImport SSH ID"
-	echo -e " * SSH add\t<alias>:<user>:<host>:[port]\tAdd New Server"
-	echo -e " * SSH del\t<alias>\t\t\t\tDelete Server"
-	echo -e " * SSH export\t\t\t\t\tExport Config"
-	echo -e " * SSH n\t<commands>\t\t\tNormal SSH Commands\n"
+	echo -e " * ssh cc\t<alias> [username]\t\tConnect to Server"
+	echo -e " * ssh ii\t<alias>:<user>:<host>:[port]\tImport SSH ID"
+	echo -e " * ssh add\t<alias>:<user>:<host>:[port]\tAdd New Server"
+	echo -e " * ssh del\t<alias>\t\t\t\tDelete Server"
+	echo -e " * ssh export\t\t\t\t\tExport Config"
+	echo -e " * ssh n\t<commands>\t\t\tNormal SSH Commands\n"
 }
 
 function probe ()
